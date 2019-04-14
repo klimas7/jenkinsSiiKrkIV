@@ -1,0 +1,38 @@
+version: '3'
+networks:
+  lab_network:
+
+volumes:
+  bitbucketVolume:
+  ldapVolume:
+
+services:
+  ldap:
+    image : sealeo/openldap
+    container_name: ldap
+    volumes:
+      - ldapVolume:/var/lib/ldap
+    ports:
+      - 389:389
+      - 80:80
+    environment:
+      - LDAP_PASSWORD=adminPass
+      - LDAP_ORGANISATION="ACME LDAP Server"
+      - LDAP_DOMAIN=acme.com
+      - LDAP_SERVERNAME=JenkinsLDAP
+    networks:
+      - lab_network
+
+  bitbucket:
+    image: atlassian/bitbucket-server
+    container_name: bitbucket
+    ports:
+      - 7990:7990
+      - 7999:7999
+    volumes:
+      - bitbucketVolume:/var/atlassian/application-data/bitbucket
+    networks:
+      - lab_network
+
+
+

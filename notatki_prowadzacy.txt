@@ -1,0 +1,194 @@
+Data aktualizacji 13-14.04.2019
+1   Prezentacja
+2   Instalacja via dnf
+    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat/jenkins.repo
+    rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+
+2.1 Uruchomienie servisu
+    # dnf install jenkins
+    # dnf install java
+    # systemctl status jenkins.service
+    # systemctl enable jenkins.service
+    # systemctl start jenkins.service
+
+    JENKINS_HOME=/var/lib/jenkins
+    logfile=/var/log/jenkins/jenkins.log
+    war=/usr/lib/jenkins/jenkins.war
+
+    firewall
+    # firewall-cmd --permanent --add-service=jenkins
+    # firewall-cmd --zone=public --add-service=http --permanent
+    # firewall-cmd --reload
+    # firewall-cmd --list-all
+2.2 Usunięcie
+    # systemctl stop jenkins.service
+    # dnf remove jenkins
+
+Docker:
+    docker pull jenkins/jenkins
+    docker run -d -v jenkins_home:/var/jenkins_home --name jenkins_sii -p 8080:8080 -p 50000:50000 jenkins/jenkins &
+cd /opt/tools/jenkins
+    docker exec jenkins_sii cat /var/jenkins_home/secrets/initialAdminPassword
+
+    docker stop jenkins_sii
+    docker rm jenkins_sii
+    docker volume rm jenkins_home
+
+3   Uruchomie via java -jar jenkins.war
+3.1 Jenkins home
+    rm -rf ~/.jenkins
+
+4   Uruchomienie ze skryptu
+4.1 ./jenkins.sh start
+    https://serverfault.com/questions/9708/what-is-a-pem-file-and-how-does-it-differ-from-other-openssl-generated-key-file
+    uruchomienie https
+4.2 Inicjalizacja i domyślne pluginy
+4.3 Omówić katalogi
+4.4 Zarządzaj Jenkinsem
+4.4.1   Informacje o Jenkinsie
+4.4.2   Informacje o systemie !! Zrzut wątków
+4.4.3 	Zarządzanie starymi danymi
+        https://github.com/klimas7/OldDataPlugin
+
+4.4.4 Odczytaj ponownie konfigurację z dysku
+        Zmienić liczbę executorów plik config.xml
+
+4.4.4   Odczyt statystyk: Zrobić kilka jobów (4 test A) ze schedulerami [Load Statistics]
+
+4.4.5   System Log
+        Plugin
+        Poziomy logowania
+        Nowy logger
+
+4.6 Zarządzaj wtyczkami
+
+4.7 Konfiguracja historia i synchroniacja
+    - Job Configuration History
+    - SCM Sync Configuration
+        -- $ mkdir /work/jenkins/config_repo
+           $ cd /work/jenkins/config_repo/
+           $ git init --bare
+
+           url: file:///work/jenkins/config_repo
+
+        -- Wygenerować klucz ssh
+           ssh-keygen -t rsa -C "your_email@example.com"
+           ssh://git@192.168.1.9:7999/~bklimas/jenkins_backup.git
+
+    -- ThinBackup
+        mkdir /work/jenkins_backup
+        0 23 * * *
+        0 * * * *
+4.8 Global Tool Configuration
+    - Java
+        -- jdk8
+        -- /opt/java/jdk8
+    - Maven
+        -- mvn
+        -- /opt/tools/maven/
+    - Docker
+        -- docker
+        --/usr/bin
+
+4.9 Configuration
+
+4.9.1 Quiet period - wyjaśnić na przykładzie dwóch jobów parent i child
+4.9.2 SCM checkout retry count - wyjaśnić na podstawie fake repo
+
+-- Email
+    -- smtp.gmail.com
+    -- jenkins.sii.krk@gmail.com
+    -- PASSSWORD
+    -- Use SSL: true
+
+//TODO Global Pipeline Libraries
+
+http://localhost:7990/users/bklimas/repos/sii-shared-lib/browse
+
+
+5   Konfiguruj ustawienia bezpieczeństwa
+
+Unix user/group database
+-- Grupy: Role-based Authorization Strategy
+
+====
+Konsola skryptow
+
+====
+Plugins do zainstalowania!
+- Maven Integration
+- Pipeline Maven Integration
+
+====
+Rest and xml api
+
+====
+Remote job invoke
+CLI:
+java -jar jenkins-cli.jar -s http://192.168.1.10:8080/ -auth admin:12345678  help
+java -jar jenkins-cli.jar -s http://192.168.1.10:8080/ -auth admin:12345678 build CLI_Invoke
+java -jar jenkins-cli.jar -s http://192.168.1.10:8080/ -auth admin:12345678 build CLI_Invoke -p param=zxc
+
+
+curl -X POST 'http://admin:89ccd304e8f6e51a2e592b89890c8dc3@192.168.1.10:8080/job/CLI_Invoke/buildWithParameters?param=abc&token=xyzxxx'
+
+curl -X POST 'http://admin:89ccd304e8f6e51a2e592b89890c8dc3@192.168.1.10:8080/job/CLI_Invoke/buildWithParameters?param=abc'
+
+###############
+RestCounter
+
+https://github.com/klimas7/restCounter.git
+target/*.jar
+target/surefire-reports/*.xml
+
+##############
+Conditional BuildStep
+
+##################
+Multibranch Pipeline
+
+########################
+mvn archetype:generate
+909: remote -> io.jenkins.archetypes:hello-world-plugin (Skeleton of a Jenkins plugin with a POM and an example build step.)
+
+artifactId: hello-world-plugin
+
+
+######### Uruchomienie ldapa
+cd /work/ldap
+docker-compose start
+
+Server:             192.168.1.9
+root DN:            dc=acme,dc=com
+Manager DN:         cn=admin,dc=acme,dc=com
+Manager Password:   adminPass
+
+docker-compose stop
+
+
+######### Uruchomienie bitbucketa
+docker pull atlassian/bitbucket-server
+docker volume create --name bitbucketVolume
+docker run -v bitbucketVolume:/var/atlassian/application-data/bitbucket --name="bitbucket" -d -p 7990:7990 -p 7999:7999 atlassian/bitbucket-server
+
+docker ps
+docker logs bitbucket
+http://localhost:7990/unavailable?next=%2Fmvc%2Fhome
+
+#1 Server IDB1UM-S7OE-F3UN-FJDV
+admin:12345678
+
+docker start bitbucket
+
+
+
+####################################
+Jeśli nie ustawimy użytkownika (admina) to zakłada się admin z hasłem inicjującym jenkinsa (jest to napisane w komunikacie!)
+
+jnlp and java  11
+
+https://jenkins.io/blog/2018/12/14/java11-preview-availability/
+https://issues.jenkins-ci.org/browse/JENKINS-52282
+https://github.com/jenkinsci/jenkins/pull/3766
+
+zmienić na java8
